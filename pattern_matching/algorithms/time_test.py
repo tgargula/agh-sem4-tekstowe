@@ -1,6 +1,6 @@
 from time import time
 
-def test(f, data, pattern):
+def test(f, *args):
     start = time()
-    f(data, pattern)
+    f(*args)
     return time() - start

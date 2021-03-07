@@ -45,14 +45,38 @@ def fa_preprocessed(data, delta):
     return result
 
 
-def transition_function(pattern):
-    return None
+def prefix_function(pattern):
+    m = len(pattern)
+    pi = [0] * m
+    k = 0
+    
+    for q in range(1, m):
+        while k > 0 and pattern[k] != pattern[q]: # check back
+            k = pi[k - 1]
+        if pattern[k] == pattern[q]: # letters match
+            k += 1
+        pi[q] = k
+    
+    return pi
 
 
 def kmp(data, pattern, pi=None):
-    pi = transition_function(pattern)
-    return kmp_preprocessed(data, pi)
+    pi = prefix_function(pattern)
+    return kmp_preprocessed(data, pattern, pi)
 
 
-def kmp_preprocessed(data, pi):
-    return None
+def kmp_preprocessed(data, pattern, pi):
+    n = len(data)
+    m = len(pattern)
+    q = 0               # number of matching symbols
+    result = []
+    for i, letter in enumerate(data):
+        while q > 0 and pattern[q] != letter:
+            q = pi[q - 1]
+        if pattern[q] == letter:
+            q += 1
+        if q == m:
+            result.append(i - m + 1)
+            q = pi[q - 1]
+
+    return result
