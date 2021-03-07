@@ -1,6 +1,8 @@
+from pprint import pprint
+
 from algorithms.pattern_matching import fa_preprocessed as fa
 from algorithms.pattern_matching import kmp_preprocessed as kmp
-from algorithms.pattern_matching import (naive, transition_table, prefix_function)
+from algorithms.pattern_matching import naive, prefix_function, transition_table
 from algorithms.time_test import test
 
 if __name__ == '__main__':
@@ -17,4 +19,4 @@ if __name__ == '__main__':
 
     print(result['naive'] / result['fa'] > 5 and result['naive'] / result['kmp'] > 5)
     
-    print(result)
+    pprint(result)

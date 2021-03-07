@@ -1,6 +1,6 @@
 from pathlib import Path
+from pprint import pprint
 
-# from algorithms.parse import parse
 from algorithms.pattern_matching import fa, kmp, naive
 from algorithms.time_test import test
 
@@ -12,4 +12,4 @@ if __name__ == '__main__':
     for f in (naive, fa, kmp):
         result[f.__name__] = test(f, text, pattern)
     
-    print(result)
+    pprint(result)
