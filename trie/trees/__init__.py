@@ -47,7 +47,8 @@ class SuffixTreeNode:
                     child._add(text, i + child.length())
                     return
                 size = common_suffix_size(A, B)
-                subnode = SuffixTreeNode(child.start + size, child.end, parent=child)
+                subnode = SuffixTreeNode(
+                    child.start + size, child.end, parent=child)
                 child.end = child.start + size - 1
                 subnode.children = child.children
                 leaf = SuffixTreeNode(i + size, len(text) - 1, parent=child)
@@ -65,7 +66,8 @@ class SuffixTree:
             self.root._add(text, i)
 
     def save(self, filename):
-        G = pydot.Dot(graph_type="graph", label=f"SuffixTree: {self.text}", labelloc='top')
+        G = pydot.Dot(graph_type="graph",
+                      label=f"SuffixTree: {self.text}", labelloc='top')
 
         root = pydot.Node(str(None), shape="point")
         G.add_node(root)
@@ -111,7 +113,8 @@ class Trie:
                 pointer = pointer.children[letter]
 
     def save(self, filename):
-        graph = pydot.Dot(graph_type="digraph", label=f"Trie: {self.text}", labelloc='top')
+        graph = pydot.Dot(graph_type="graph",
+                          label=f"Trie: {self.text}", labelloc='top')
 
         root = pydot.Node("root", shape="point")
         graph.add_node(root)
