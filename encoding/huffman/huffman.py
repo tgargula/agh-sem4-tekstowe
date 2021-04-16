@@ -3,15 +3,15 @@ import pydot
 from collections import deque
 from bitarray import bitarray
 
-BITS_PER_LETTER = 8
+BITS_PER_LETTER = 16
+BITS_PER_SIZE = 64
 
-
-def extract_min(leafs, nodes):
-    if not leafs:
+def extract_min(leaves, nodes):
+    if not leaves:
         return nodes.pop()
     if not nodes:
-        return leafs.pop()
-    return nodes.pop() if nodes[-1].weight < leafs[-1].weight else leafs.pop()
+        return leaves.pop()
+    return nodes.pop() if nodes[-1].weight < leaves[-1].weight else leaves.pop()
 
 
 def count_letters(text):
@@ -32,10 +32,8 @@ class Node:
         self.weight = weight
         self.parent = None
         self.visited = False
-        if left:
-            left.parent = self
-        if right:
-            right.parent = self
+        if left: left.parent = self
+        if right: right.parent = self
 
     def postorder(self):
         return self.left.postorder() + self.right.postorder() + [self]
@@ -79,23 +77,36 @@ class Leaf(Node):
         G.add_edge(edge)
 
 
+'''Decorator class for List that saves info about the index'''
+class List:
+    def __init__(self, *nodes):
+        self.structure = []
+        self.extend(*nodes)
+    
+    def __getitem__(self, index):
+        return self.structure[index]
+    
+    def __setitem__(self, index, node):
+        self.structure[index] = node
+        node.index = index
+    
+    def append(self, node):
+        self.structure.append(node)
+        node.index = len(self.structure) - 1
+    
+    def extend(self, *nodes):
+        for node in nodes:
+            self.append(node)
+    
+    def pop(self):
+        node = self.structure.pop()
+        node.index = None
+
+
 class HuffmanTree:
     def __init__(self, root):
         self.root = root
         self.codes, self.letters = self._get_encodings()
-
-    def encode(self, text):
-        return ''.join([self.codes[letter] for letter in text])
-
-    def decode(self, code, size=None):
-        i, j = 0, 1
-        result = []
-        while i < len(code) and (size is None or len(result) < size):
-            while code[i:j] not in self.letters:
-                j += 1
-            result += self.letters[code[i:j]]
-            i = j
-        return ''.join(result)
 
     def save(self, filename='out.png'):
         G = pydot.Dot(graph_type="graph")
@@ -107,7 +118,7 @@ class HuffmanTree:
         pointer = self.root
         code = []
         while pointer:
-            if pointer.left is None or pointer is None:
+            if pointer.left is None:
                 encoded = ''.join(code)
                 codes[pointer.letter] = encoded
                 letters[encoded] = pointer.letter
@@ -126,23 +137,78 @@ class HuffmanTree:
                     code = code[:-1]
                     pointer = pointer.parent
         return codes, letters
+    
+    def decode_size(self, binary):
+        return int(binary[:BITS_PER_SIZE].to01(), 2)
 
 
 class StaticHuffmanTree(HuffmanTree):
-    def __init__(self, text):
-        super().__init__(self._build(count_letters(text)))
+    def __init__(self, text=None):
+        if text is not None:
+            super().__init__(self._build(count_letters(text)))
+            self.encoded = self.encode(text).tobytes()
+        else:
+            self.root = None
+        
+    def get_encoded(self):
+        return self.encoded
 
     def _build(self, dictionary):
-        leafs = [Leaf(weight, letter) for letter, weight in
+        leaves = [Leaf(weight, letter) for letter, weight in
                  sorted([item for item in dictionary.items()], key=lambda item: -item[1])]
         nodes = deque()
-        if len(leafs) == 1:
-            nodes.append(leafs.pop())
-        while len(leafs) + len(nodes) > 1:
-            node1 = extract_min(leafs, nodes)
-            node2 = extract_min(leafs, nodes)
+        if len(leaves) == 1:
+            nodes.append(leaves.pop())
+        while len(leaves) + len(nodes) > 1:
+            node1 = extract_min(leaves, nodes)
+            node2 = extract_min(leaves, nodes)
             nodes.appendleft(Node(node1.weight + node2.weight, node1, node2))
         return nodes.pop()
+    
+    def _encode_tree(self):
+        return bitarray(''.join(
+            ['1' + utf8(node.letter) if isinstance(node, Leaf) else '0' for node in self.root.postorder()]
+        ) + '0')
+    
+    def _encode_size(self, text):
+        return bitarray(bin(len(text))[2:].zfill(BITS_PER_SIZE))
+
+    def _encode_text(self, text):
+        return bitarray(''.join([self.codes[letter] for letter in text]))
+
+    def encode(self, text):
+        return self._encode_size(text) + self._encode_tree() + self._encode_text(text)
+
+    def decode_tree(self, binary):
+        stack = []
+        j = 0
+        while j < len(binary):
+            j += 1
+            if binary[j-1]:
+                stack.append(Leaf(None, chr(int(binary[j:j+BITS_PER_LETTER].to01(), 2))))
+                j += BITS_PER_LETTER
+            else:
+                if len(stack) == 1:
+                    self.root = stack.pop()
+                    self.codes, self.letters = self._get_encodings()
+                    return j
+                node1, node2 = stack.pop(), stack.pop()
+                stack.append(Node(None, node2, node1))
+
+    def decode_text(self, binary, size):
+        i, j = 0, 1
+        result = []
+        while i < len(binary) and (size is None or len(result) < size):
+            while binary[i:j].to01() not in self.letters:
+                j += 1
+            result += self.letters[binary[i:j].to01()]
+            i = j
+        return ''.join(result)
+
+    def decode(self, binary):
+        size = self.decode_size(binary)
+        text_begin = self.decode_tree(binary[BITS_PER_SIZE:])
+        return self.decode_text(binary[BITS_PER_SIZE + text_begin:], size)
 
 
 class DynamicHuffmanTree(HuffmanTree):
@@ -151,19 +217,30 @@ class DynamicHuffmanTree(HuffmanTree):
         self.NYT = self.root
         self.pointers = {}
         self.encoded = bitarray()
-        self.nodes = [self.NYT]
-        self.root.index = 0
+        self.nodes = List(self.NYT)
         for letter in stream:
             self.add(letter)
+    
+    def get_encoded(self):
+        return bitarray(bin(self.root.weight)[2:].zfill(BITS_PER_SIZE)) + self.encoded
 
     def decode(self, binary):
         pointer = self.root
         decoded = []
         skipping = 0
+
+        size = decode_size(binary)
+        print(size)
+
+        binary = binary[BITS_PER_SIZE:]
+
         for i, bit in enumerate(binary):
             skipping = skipping - 1 if skipping > 0 else 0
+            if not size:
+                break
             if not skipping:
                 if isinstance(pointer, Leaf):
+                    size -= 1
                     if pointer is self.NYT:
                         letter = chr(int(binary[i:i+BITS_PER_LETTER].to01(), 2))
                         print(binary[i:i+BITS_PER_LETTER])
@@ -185,14 +262,12 @@ class DynamicHuffmanTree(HuffmanTree):
             if isinstance(pointer, Leaf):
                 if pointer is self.NYT:
                     letter = chr(int(binary[i:i+BITS_PER_LETTER].to01(), 2))
-                    print(binary[i:i+BITS_PER_LETTER])
                     skipping = BITS_PER_LETTER
                     self.add(letter)
                     decoded.append(letter)
                     pointer = self.root
                 else:
                     decoded.append(pointer.letter)
-                    print(pointer.letter)
                     self.add(pointer.letter)
                     pointer = self.root
         
@@ -208,8 +283,8 @@ class DynamicHuffmanTree(HuffmanTree):
             self.encoded.extend(leaf.code())
             p = leaf
             next = self.next(p)
-            while next is not None and p.weight == next.weight:
-                self.swap(p, next)
+            while next is not None and not (isinstance(p, Leaf) ^ isinstance(next, Leaf)) and p.weight == next.weight:
+                self._swap(p, next)
                 next = self.next(p)
             if p.parent.left is self.NYT:
                 leaf = p
@@ -223,12 +298,7 @@ class DynamicHuffmanTree(HuffmanTree):
             self.nodes.pop()
             leaf = Leaf(0, letter)
             node = Node(0, self.NYT, leaf)
-            self.nodes.append(node)
-            node.index = len(self.nodes) - 1
-            self.nodes.append(leaf)
-            leaf.index = len(self.nodes) - 1
-            self.nodes.append(self.NYT)
-            self.NYT.index = len(self.nodes) - 1
+            self.nodes.extend(node, leaf, self.NYT)
             if self.NYT is self.root:
                 self.root = node
             if parent is not None:
@@ -239,11 +309,10 @@ class DynamicHuffmanTree(HuffmanTree):
 
         self._update(p, leaf)
 
-    def swap(self, node1, node2):
+    def _swap(self, node1, node2):
         index1 = node1.index
         index2 = node2.index
         self.nodes[index1], self.nodes[index2] = self.nodes[index2], self.nodes[index1]
-        node1.index, node2.index = node2.index, node1.index
         parent1 = node1.parent
         parent2 = node2.parent
         if parent1.left is node1 and parent2.left is node2:
@@ -263,7 +332,7 @@ class DynamicHuffmanTree(HuffmanTree):
 
             next = self.next(node)
             while next is not None and isinstance(next, Leaf) and next.weight == node.weight + 1:
-                self.swap(node, next)
+                self._swap(node, next)
                 next = self.next(node)
             node.weight += 1
             node = parent
@@ -273,43 +342,26 @@ class DynamicHuffmanTree(HuffmanTree):
         if leaf is not None:
             next = self.next(leaf)
             while next is not None and not isinstance(next, Leaf) and next.weight == leaf.weight:
-                self.swap(leaf, next)
+                self._swap(leaf, next)
                 next = self.next(leaf)
             leaf.weight += 1
 
 
 if __name__ == '__main__':
 
-    string = "avadakedavra"
+    string = "abracadabra"
 
-    d = count_letters(string)
     HT = StaticHuffmanTree(string)
-    HT.save()
-    print(f'Encoded: {HT.encode(string)}')
-    print(f'Decoded: {HT.decode(HT.encode(string))}')
-
-    pointer = HT.root
-    while not isinstance(pointer, Leaf):
-        pointer = pointer.right
-
-    print(pointer.letter)
-    # print(pointer.code())
+    HT.save("static.png")
+    array = bitarray()
+    array.frombytes(HT.encoded)
+    decoded = StaticHuffmanTree().decode(array)
+    print(f'Encoded: {array}')
+    print(f'Decoded: {decoded}')
 
     DHT = DynamicHuffmanTree()
 
     for i, letter in enumerate(string):
         DHT.add(letter)
         print(DHT.encoded)
-    DHT.save(f"DHT{i}.png")
-
-    print(DynamicHuffmanTree().decode(DHT.encoded))
-
-    # pointer = DHT.root.right.left.right.right
-    # # while not isinstance(pointer, Leaf):
-    # #     print(pointer.weight)
-    # #     pointer = pointer.right
-
-    # print(pointer.letter)
-    # print(pointer.next().letter)
-
-    # print(bitarray("01010") + bitarray("1111"))
+        DHT.save(f"dynamic{i}.png")
