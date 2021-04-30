@@ -1,0 +1,10 @@
+setup.py
+lcs/__init__.py
+lcs/diff.py
+lcs/lcs.py
+lcs/levenshtein.py
+lcs/tokenizer.py
+lcs.egg-info/PKG-INFO
+lcs.egg-info/SOURCES.txt
+lcs.egg-info/dependency_links.txt
+lcs.egg-info/top_level.txt

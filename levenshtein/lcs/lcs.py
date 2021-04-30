@@ -5,26 +5,25 @@ EQUAL = 0
 LEFT = -1
 
 
-def extract(string, p, i=None, j=None, acc=None):
-    if i is None:
-        i = p.shape[0] - 1
-    if j is None:
-        j = p.shape[1] - 1
-    if acc is None:
-        acc = []
+def extract(array, p):
 
-    if i == 0 or j == 0:
-        return acc if acc else ""
+    stack = []
 
-    if p[i, j] == EQUAL:
-        extract(string, p, i - 1, j - 1, acc)
-        acc.append(string[i - 1])
-    elif p[i, j] == UP:
-        extract(string, p, i - 1, j, acc)
-    else:
-        extract(string, p, i, j - 1, acc)
+    i, j = p.shape
+    i, j = i - 1, j - 1
 
-    return "".join(acc)
+    while i != 0 and j != 0:
+        if p[i, j] == EQUAL:
+            stack.append(array[i - 1])
+            i, j = i - 1, j - 1
+        elif p[i, j] == UP:
+            i = i - 1
+        elif p[i, j] == LEFT:
+            j = j - 1
+        else:
+            raise Exception(f"Illegal argument: {p[i, j]}")
+
+    return "".join(reversed(stack)) if isinstance(array, str) else list(reversed(stack))
 
 
 def lcs(a, b):

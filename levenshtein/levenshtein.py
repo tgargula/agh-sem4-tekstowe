@@ -1,4 +1,4 @@
-from levenshtein import levenshtein, show
+from lcs import levenshtein, show
 
 pairs = [
     ('los', 'kloc'),

@@ -1,5 +1,7 @@
 import pytest
-from .diff import diff_
+
+from lcs.diff import diff_
+
 
 @pytest.mark.parametrize(
     'expected,a,b',
