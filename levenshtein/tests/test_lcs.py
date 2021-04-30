@@ -11,10 +11,10 @@ from lcs import lcs
         (5, 'Hello', 'Hello'),
         (3, 'lasso', 'las'),
         (2, 'zbcy', 'vbyu'),
-        (5, 'abTcHEdeRfghEi', 'zyxTHwutEsRrpE'),
+        (5, 'abTcHEdeRfghEi', 'zyxTHwutEsRrpEab'),
         (3, ['a', 'b', 'c'], ['a', 'b', 'c']),
         (1, [''], ['']),
-        (2, ['ABC', 'B', 'CAA', 'HI'], ['Hello', 'B', 'HI', 'Ja', 'AGdsa']),
+        (2, ['ABC', 'B', 'CAA', 'HI'], ['Hello', 'B', 'HI', 'Ja', 'AGdsa', 'ABC']),
         (0, [], []),
     ]
 )

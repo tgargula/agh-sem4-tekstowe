@@ -48,8 +48,7 @@ def lcs_(a, b, tokens):
     for j in range(1, m):
         for i in range(1, n):
             if (
-                tokens
-                and a[i - 1].text_with_ws == b[j - 1].text_with_ws
+                tokens and a[i - 1].text_with_ws == b[j - 1].text_with_ws
                 or a[i - 1] == b[j - 1]
             ):
                 d[i, j] = d[i - 1, j - 1] + 1

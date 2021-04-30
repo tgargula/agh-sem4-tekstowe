@@ -33,7 +33,7 @@ def path(p):
             j -= 1
             route.append(EQUAL)
 
-    return list(reversed(route))
+    return reversed(route)
 
 
 def levenshtein(a, b):
@@ -73,7 +73,6 @@ def show(a, b, path):
     tmp = a
     j = 0
     
-    print(path)
     print(a)
 
     for i, move in enumerate(path):

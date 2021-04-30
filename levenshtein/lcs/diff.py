@@ -1,5 +1,6 @@
-from .lcs import lcs_tokens, lcs_text, EQUAL, UP, LEFT
+from .lcs import lcs_tokens, lcs_text, EQUAL
 from .tokenizer import tokenize_from_file, lines
+
 
 def extract(a, b, p):
     (n, m) = p.shape
@@ -7,7 +8,7 @@ def extract(a, b, p):
     result = {}
     for j in range(1, m):
         for i in range(1, n):
-            if p[i, j] == 0:
+            if p[i, j] == EQUAL:
                 break
             if i == n - 1:
                 if "<" in result:

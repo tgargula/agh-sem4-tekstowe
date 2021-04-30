@@ -1,4 +1,4 @@
-from .lcs import lcs
 from .diff import diff
+from .lcs import lcs
 from .levenshtein import levenshtein, show
-from .tokenizer import punch, tokenize_from_file, decompose
+from .tokenizer import decompose, punch, tokenize_from_file

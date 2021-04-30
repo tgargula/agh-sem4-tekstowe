@@ -17,3 +17,4 @@ def test_lcs_of_punched_text(expected, text, level):
     lcsv, _ = lcs_tokens(tokens, punched)
     lcsv = lcsv[len(tokens), len(punched)]
     assert expected == lcsv
+    
