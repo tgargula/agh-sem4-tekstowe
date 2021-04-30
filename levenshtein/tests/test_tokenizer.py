@@ -1,7 +1,7 @@
 import pytest
 
 from lcs import punch, decompose
-from lcs.tokenizer import tokenize, nlp
+from lcs.tokenizer import tokenize, nlp, lines
 
 
 @pytest.mark.parametrize(
@@ -47,3 +47,18 @@ def test_decompose(expected, text):
     tokens = tokenize(text)
     got = decompose(tokens)
     assert expected == got
+
+
+@pytest.mark.parametrize(
+    "expected,text",
+    [
+        (10, "1\n2\n3\n4\n5\n6\n7\n8\n9\n0"),
+        (4, "Hello there!\n\n\nGeneral Kenobi!"),
+        (1, "Hello there! General Kenobi! You are a bold one!"),
+    ],
+)
+def test_lines(expected, text):
+    tokens = tokenize(text)
+    got = lines(tokens)
+    assert expected == len(got)
+    

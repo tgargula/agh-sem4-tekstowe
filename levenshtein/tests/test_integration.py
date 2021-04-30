@@ -1,5 +1,5 @@
 import pytest
-from lcs.lcs import lcs_
+from lcs.lcs import lcs_tokens
 from lcs.tokenizer import tokenize
 from lcs import punch
 
@@ -14,6 +14,6 @@ from lcs import punch
 def test_lcs_of_punched_text(expected, text, level):
     tokens = tokenize(text)
     punched = punch(tokens, level=level)
-    lcsv, _ = lcs_(tokens, punched)
+    lcsv, _ = lcs_tokens(tokens, punched)
     lcsv = lcsv[len(tokens), len(punched)]
     assert expected == lcsv

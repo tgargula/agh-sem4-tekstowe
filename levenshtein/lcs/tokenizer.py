@@ -1,4 +1,5 @@
 from spacy.lang.pl import Polish
+from spacy.tokens.doc import Doc
 from random import randrange
 
 nlp = Polish()
@@ -28,4 +29,17 @@ def punch(tokens, level=0.03):
 
 def decompose(tokens):
     return [token.text_with_ws for token in tokens]
-    
+
+
+def lines(tokens):
+    result = [[]]
+    for token in tokens:
+        if '\n' in token.text_with_ws:
+            n = len([letter for letter in token.text_with_ws if letter == '\n'])
+            for i in range(n - 1):
+                result.append([])
+            result[-1] = nlp(''.join([token.text_with_ws for token in result[-1]]))
+            result.append([])
+        else:
+            result[-1].append(token)
+    return result

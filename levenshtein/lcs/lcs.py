@@ -27,11 +27,19 @@ def extract(array, p):
 
 
 def lcs(a, b):
-    d, p = lcs_(a, b)
+    d, p = lcs_text(a, b)
     return d[len(a), len(b)], extract(a, p)
 
 
-def lcs_(a, b):
+def lcs_tokens(a, b):
+    return lcs_(a, b, tokens=True)
+
+
+def lcs_text(a, b):
+    return lcs_(a, b, tokens=False)
+
+
+def lcs_(a, b, tokens):
     n = len(a) + 1
     m = len(b) + 1
     d = np.zeros(shape=(n, m))
@@ -39,7 +47,11 @@ def lcs_(a, b):
 
     for j in range(1, m):
         for i in range(1, n):
-            if a[i - 1] == b[j - 1]:
+            if (
+                tokens
+                and a[i - 1].text_with_ws == b[j - 1].text_with_ws
+                or a[i - 1] == b[j - 1]
+            ):
                 d[i, j] = d[i - 1, j - 1] + 1
                 p[i, j] = EQUAL
             elif d[i - 1, j] > d[i, j - 1]:

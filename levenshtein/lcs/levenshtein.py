@@ -72,8 +72,10 @@ def levenshtein(a, b):
 def show(a, b, path):
     tmp = a
     j = 0
+    
     print(path)
     print(a)
+
     for i, move in enumerate(path):
         if move == EQUAL:
             print(tmp[: i + j] + f"*{tmp[i+j]}*" + tmp[i + j + 1 :], "EQUAL")
@@ -87,5 +89,7 @@ def show(a, b, path):
         elif move == ADD:
             print(tmp[: i + j] + f"*{b[i+j]}*" + tmp[i + j :], "ADD")
             tmp = tmp[: i + j] + b[i + j] + tmp[i + j :]
+    
+    print(b)
 
     return tmp

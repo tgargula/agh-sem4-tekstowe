@@ -1,9 +1,13 @@
 from lcs import diff
-from lcs.diff import diff_
+from lcs.diff import diff_text
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
-    line1 = ['there', 'general', 'Kenobi', 'world']
-    line2 = ['Hello', 'there', 'general', 'Kenobi']
-    print(diff_(line1, line2))
-    print(diff('data/data1.txt', 'data/data2.txt'))
+    d = diff("data/romeo-i-julia-700.txt", "data/out1.txt")
+    # d = diff("data/data1.txt", "data/data2.txt")
+
+    for line, diffrence in d.items():
+        print(f"{line} :")
+        for pointer, words in diffrence.items():
+            print("\t", pointer, end=" ")
+            print(*words, sep=" ")
