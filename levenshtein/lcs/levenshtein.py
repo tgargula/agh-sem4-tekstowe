@@ -33,7 +33,7 @@ def path(p):
             j -= 1
             route.append(EQUAL)
 
-    return reversed(route)
+    return list(reversed(route))
 
 
 def levenshtein(a, b):
