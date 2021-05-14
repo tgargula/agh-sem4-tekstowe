@@ -1,39 +1,47 @@
 import pytest
 
-from metrics.metrics import dice, cosine, euclidean
+from metrics.metrics import dice, cosine, lcs, levenshtein
 
 @pytest.mark.parametrize(
-    'expected,x,y',
+    'expected,x',
     [
-        (1, {'al': 1, 'lg': 1, 'go': 1}, {'og': 1, 'gl': 1, 'la': 1}),
-        (0.4, {'al': 1, 'lg': 1, 'go': 1}, {'al': 1, 'lg': 1, 'go': 1, 'or': 1, 'ry': 1, 'yt': 1, 'tm': 1})
+        (1, ['algo', 'ogla']),
+        (0.4, ['algo', 'algorytm'])
     ]
 )
-def test_dice(expected, x, y):
-    assert expected == dice(x, y)
-
-
-@pytest.mark.parametrize(
-    'expected,x,y',
-    [
-        (1, {'al': 1, 'lg': 1, 'go': 1}, {'og': 1, 'gl': 1, 'la': 1}),
-        (0.7, {'al': 1, 'lg': 1, 'go': 1}, {'al': 1, 'lg': 1, 'go': 1, 'or': 1, 'ry': 1, 'yt': 1, 'tm': 1})
-    ]
-)
-def test_cosine(expected, x, y):
-    assert expected == cosine(x, y)
+def test_dice(expected, x):
+    assert expected == dice([0], [1], x, length=2)
 
 
 @pytest.mark.parametrize(
-    'expected,x,y',
+    'expected,x',
     [
-        (0.816496580927726, {'al': 1, 'lg': 1, 'go': 1}, {'og': 1, 'gl': 1, 'la': 1}),
-        (0.4364357804719847, {'al': 1, 'lg': 1, 'go': 1}, {'al': 1, 'lg': 1, 'go': 1, 'or': 1, 'ry': 1, 'yt': 1, 'tm': 1}),
+        (1, ['algo', 'ogla']),
+        (0.7, ['algo', 'algorytm'])
     ]
 )
-def test_euclidean(expected, x, y):
-    assert expected == euclidean(x, y)
+def test_cosine(expected, x):
+    assert expected == cosine([0], [1], x, 2)
 
-
-if __name__ == '__main__':
-    euclidean({'al': 1, 'lg': 1, 'go': 1}, {'al': 1, 'lg': 1, 'go': 1, 'or': 1, 'ry': 1, 'yt': 1, 'tm': 1})
+    
+@pytest.mark.parametrize(
+    'expected,x',
+    [
+        (0.75, ['algo', 'ogla']),
+        (0.5, ['algo', 'algorytm']),
+        (0.75, ['alor', 'algorytm'])
+    ]
+)
+def test_lcs(expected, x):
+    assert expected == lcs([0], [1], x)
+    
+@pytest.mark.parametrize(
+    'expected,x',
+    [
+        (1, ['algo', 'ogla']),
+        (0.5, ['algo', 'algorytm']),
+        (0.5, ['alor', 'algorytm'])
+    ]
+)
+def test_levenshtein(expected, x):
+    assert expected == levenshtein([0], [1], x)
