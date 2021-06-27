@@ -20,6 +20,5 @@ def test_decompress():
 
             assert text == decoded
 
-
 if __name__ == '__main__':
     test_decompress()
